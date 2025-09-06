@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>National Space Day Quiz</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f4faff;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
+
+/* General styling */
+h2 { margin: 20px 0; color: #004080; }
+.container {
+  max-width: 600px;
+  margin: auto;
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(0,0,0,0.1);
+}
+input, select {
+  padding: 10px;
+  width: 90%;
+  margin: 10px auto;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  display: block;
+}
+button {
+  background: linear-gradient(90deg, #1e90ff, #00bfff);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  box-shadow: 0 0 10px rgba(0,191,255,0.6);
+  animation: pulse 1.5s infinite;
+  margin: 10px;
+}
+button:hover { transform: scale(1.1); }
+@keyframes pulse {
+  0% { transform: scale(1); box-shadow: 0 0 10px rgba(0,191,255,0.6); }
+  50% { transform: scale(1.05); box-shadow: 0 0 20px rgba(0,191,255,0.9); }
+  100% { transform: scale(1); box-shadow: 0 0 10px rgba(0,191,255,0.6); }
+}
+.hidden { display: none; }
+.question { margin: 20px 0; text-align: left; }
+.options label {
+  display: block;
+  background: #f9f9f9;
+  padding: 8px;
+  margin: 5px 0;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+}
+input[type="checkbox"] {
+  accent-color: #004080;
+  width: 18px;
+  height: 18px;
+  margin-right: 10px;
+}
+#timer {
+  font-size: 18px;
+  font-weight: bold;
+  color: red;
+  margin: 10px;
+}
+
+/* Certificate styling */
+#certificate {
+  border: 10px solid gold;
+  background: linear-gradient(to bottom,#fff 0%,#fdf6e3 100%);
+  width: 100%;
+  max-width: 1000px;
+  aspect-ratio: 16/9; /* rectangle shape */
+  margin: 20px auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Georgia', serif;
+  position: relative;
+  box-shadow: 0 0 20px rgba(0,0,0,0.2);
+  padding: 40px;
+}
+#certificate img {
+  position: absolute;
+  top: 30px;
+  left: 30px;
+  max-width: 150px;
+}
+#certificate h2 { font-size: 32px; color:#004080; margin:10px 0; text-align:center; }
+#certificate h3 { font-size: 26px; margin:5px 0; color:#000080; }
+#certificate h4 { font-size: 20px; margin:5px 0; font-style: italic; }
+#certificate p { font-size: 18px; margin: 5px 0; text-align:center; }
+
+/* Participants Table */
+#participantsTable {
+  margin: 20px auto;
+  border-collapse: collapse;
+  width: 80%;
+}
+#participantsTable th, #participantsTable td { border: 1px solid #ccc; padding: 10px; }
+#participantsTable th { background: #e0f0ff; }
+</style>
+</head>
+<body>
+
+<!-- Registration Page -->
+<div id="registrationPage" class="container">
+  <h2>Step 1: Registration</h2>
+  <input type="text" id="name" placeholder="Enter your name" required>
+  <input type="email" id="email" placeholder="Enter your email" required>
+  <select id="department">
+    <option value="">Select Department</option>
+    <option value="CSE">CSE</option>
+    <option value="ECE">ECE</option>
+    <option value="MECH">MECH</option>
+    <option value="CIVIL">CIVIL</option>
+  </select>
+  <button onclick="register()">Register</button>
+</div>
+
+<!-- Quiz Page -->
+<div id="quizPage" class="container hidden">
+  <h2>Step 2: Quiz</h2>
+  <div id="timer">Time Left: 10:00</div>
+  <form id="quizForm"></form>
+  <button onclick="submitQuiz()">Submit Quiz</button>
+</div>
+
+<!-- Certificate Page -->
+<div id="certificatePage" class="container hidden">
+  <h2>Step 3: Certificate</h2>
+  <div id="certificate">
+    <img src="https://dial4college.blr1.cdn.digitaloceanspaces.com/pro/1895/logo/1703653657.png" alt="IEEE Logo">
+    <h2>SECAB INSTITUTE OF ENGINEERING & TECHNOLOGY</h2>
+    <h3>Certificate of Participation</h3>
+    <p>This is to certify that</p>
+    <h3 id="certName"></h3>
+    <p>of <span id="certDept"></span> department</p>
+    <p>has successfully participated in the</p>
+    <h3>National Space Day Quiz</h3>
+    <p>organized by</p>
+    <h4>IEEE Members of CSE Department</h4>
+    <p>Score: <span id="certScore"></span>%</p>
+    <p>Date: <span id="certDate"></span></p>
+  </div>
+  <button onclick="downloadCertificate()">Download Certificate</button>
+  <button onclick="window.print()">Print</button>
+  <br><br>
+  <button onclick="window.location.href='participants.html'">Show Participants</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+let questions = [
+  {q:"When is National Space Day celebrated?",options:["First Friday of May","15th August","4th October","12th April"],answer:0},
+  {q:"Who is known as the 'Father of the Indian Space Program'?",options:["Dr. A.P.J. Abdul Kalam","Dr. Homi J. Bhabha","Dr. Vikram Sarabhai","Dr. Satish Dhawan"],answer:2},
+  {q:"Which organization is responsible for India’s space research?",options:["NASA","ISRO","ESA","Roscosmos"],answer:1},
+  {q:"What was the name of India’s first satellite?",options:["Aryabhata","Bhaskara","INSAT-1A","Rohini"],answer:0},
+  {q:"Where is the Satish Dhawan Space Centre located?",options:["Bengaluru","Sriharikota","Hyderabad","Pune"],answer:1},
+  {q:"Chandrayaan-3 successfully landed on which part of the Moon?",options:["Near side","South Pole","Equator","North Pole"],answer:1},
+  {q:"What does PSLV stand for?",options:["Polar Satellite Launch Vehicle","Powerful Satellite Lifting Vehicle","Planetary Science Launch Vehicle","Payload Satellite Launch Vehicle"],answer:0},
+  {q:"Who was the first Indian to travel into space?",options:["Rakesh Sharma","Kalpana Chawla","Sunita Williams","Raja Chari"],answer:0},
+  {q:"What was the name of India’s Mars mission?",options:["Chandrayaan","Mangalyaan","Astrosat","Gaganyaan"],answer:1},
+  {q:"What is the purpose of Gaganyaan Mission?",options:["Space telescope","Human spaceflight","Moon rover","Satellite communication"],answer:1}
+];
+
+let user = {};
+let timeLeft = 600;
+let timerInterval;
+
+function register() {
+  let name = document.getElementById("name").value.trim();
+  let email = document.getElementById("email").value.trim();
+  let dept = document.getElementById("department").value;
+  if(!name||!email||!dept){ alert("Please fill all details"); return;}
+  let registered = JSON.parse(localStorage.getItem("registeredEmails"))||[];
+  if(registered.includes(email)){ alert("Email already registered!"); return;}
+  registered.push(email); localStorage.setItem("registeredEmails", JSON.stringify(registered));
+  user={name,email,dept};
+  document.getElementById("registrationPage").classList.add("hidden");
+  document.getElementById("quizPage").classList.remove("hidden");
+  loadQuiz(); startTimer();
+}
+
+function loadQuiz(){
+  let form=document.getElementById("quizForm"); form.innerHTML="";
+  questions.forEach((q,i)=>{
+    let div=document.createElement("div"); div.className="question"; div.innerHTML=`<b>Q${i+1}. ${q.q}</b>`;
+    q.options.forEach((opt,j)=>{ div.innerHTML+=`<label><input type="checkbox" name="q${i}" value="${j}"> ${opt}</label>`; });
+    form.appendChild(div);
+  });
+}
+
+function startTimer(){
+  timerInterval=setInterval(()=>{
+    timeLeft--; let min=Math.floor(timeLeft/60); let sec=timeLeft%60;
+    document.getElementById("timer").innerText=`Time Left: ${min}:${sec<10?"0":""}${sec}`;
+    if(timeLeft<=0){ clearInterval(timerInterval); submitQuiz(); }
+  },1000);
+}
+
+function submitQuiz(){
+  clearInterval(timerInterval);
+  let score=0;
+  questions.forEach((q,i)=>{
+    let ans=document.querySelector(`input[name="q${i}"]:checked`);
+    if(ans && parseInt(ans.value)===q.answer) score++;
+  });
+  let percent=Math.round((score/questions.length)*100);
+  if(percent>=60){ showCertificate(percent); } 
+  else { alert("Score "+percent+"%. Certificate requires 60% or above."); window.location.reload(); }
+}
+
+function showCertificate(percent){
+  document.getElementById("quizPage").classList.add("hidden");
+  document.getElementById("certificatePage").classList.remove("hidden");
+  document.getElementById("certName").innerText=user.name;
+  document.getElementById("certDept").innerText=user.dept;
+  document.getElementById("certScore").innerText=percent;
+  document.getElementById("certDate").innerText=new Date().toLocaleDateString();
+  let participants=JSON.parse(localStorage.getItem("participants"))||[];
+  participants.push({name:user.name,dept:user.dept,score:percent});
+  localStorage.setItem("participants", JSON.stringify(participants));
+}
+
+function downloadCertificate(){
+  html2canvas(document.getElementById("certificate")).then(canvas=>{
+    let link=document.createElement("a");
+    link.download="certificate.png";
+    link.href=canvas.toDataURL();
+    link.click();
+  });
+}
+</script>
+</body>
+</html>
